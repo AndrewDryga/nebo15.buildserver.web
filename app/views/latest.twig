@@ -1,0 +1,10 @@
+{% extends 'layout.twig' %}
+
+{% block navbar %}
+    {% import "layout.twig" as layout %}
+    {{ layout.navbar('latest') }}
+{% endblock %}
+
+{% block content %}
+    <h1>Latest</h1>
+{% endblock %}

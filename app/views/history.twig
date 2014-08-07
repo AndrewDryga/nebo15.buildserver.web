@@ -1,0 +1,49 @@
+{% extends 'layout.twig' %}
+
+{% block navbar %}
+    {% import "layout.twig" as layout %}
+    {{ layout.navbar('history') }}
+{% endblock %}
+
+{% block content %}
+    <h1>History</h1>
+
+    <table class="table table-striped table-hover ">
+        <thead>
+        <tr>
+            <th>#</th>
+            {% for field in structure %}
+                <th>{{ field|capitalize|replace({'_': " "}) }}</th>
+            {% endfor %}
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for build in builds %}
+        <tr>
+            <td>{{ build._id }}</td>
+            {% for field in structure %}
+                {% if field == 'build_filename' %}
+                    <td><a href="/builds/{{ build._id }}/{{ build.build_filename }}">{{ build.build_filename }}</a></td>
+                    {#<td><a href="/download/{{ build._id }}">{{ build.build_filename }}</a></td>#}
+                {% else %}
+                    <td>{{ attribute(build, field) }}</td>
+                {% endif %}
+            {% endfor %}
+            <td>
+                <a href="/builds/{{ build._id }}/{{ build.build_filename }}" class="btn btn-success btn-xs">Download</a>
+                <a href="/build/delete/{{ build._id }}" class="btn btn-primary btn-xs">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="col-xs-6 col-md-4 col-md-offset-4">
+        <ul class="pager">
+            <li class="previous"><a href="/history.html?page={{ page - 1 }}">← Older</a></li>
+            <li class="next"><a href="/history.html?page={{ page + 1 }}">Newer →</a></li>
+        </ul>
+    </div>
+
+{% endblock %}

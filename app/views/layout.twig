@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Builder</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="navbar navbar-default">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">Builder</a>
+    </div>
+    <div class="navbar-collapse collapse navbar-responsive-collapse">
+        {% macro navbar(section_name) %}
+            <ul class="nav navbar-nav navbar">
+                <li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.html">Latest</a></li>
+                <li{% if section_name == 'history' %} class="active"{% endif %}><a href="/history.html">History</a></li>
+                <li{% if section_name == 'api' %} class="active"{% endif %}><a href="/api.html">Api</a></li>
+            </ul>
+        {% endmacro %}
+        {% block navbar %}{% endblock %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        {% block content %}{% endblock %}
+    </div>
+</div>
+</body>
+</html>
