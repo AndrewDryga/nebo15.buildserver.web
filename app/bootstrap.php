@@ -119,7 +119,7 @@ $app->db(
 );
 
 $app->build_table(
-    function() use ($app){
+    function () use ($app) {
         return new \Builder\Model\BuildTable($app->db());
     }
 );

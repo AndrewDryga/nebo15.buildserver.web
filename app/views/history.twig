@@ -20,21 +20,23 @@
         </thead>
         <tbody>
         {% for build in builds %}
-        <tr>
-            <td>{{ build._id }}</td>
-            {% for field in structure %}
-                {% if field == 'build_filename' %}
-                    <td><a href="/builds/{{ build._id }}/{{ build.build_filename }}">{{ build.build_filename }}</a></td>
-                    {#<td><a href="/download/{{ build._id }}">{{ build.build_filename }}</a></td>#}
-                {% else %}
-                    <td>{{ attribute(build, field) }}</td>
-                {% endif %}
-            {% endfor %}
-            <td>
-                <a href="/builds/{{ build._id }}/{{ build.build_filename }}" class="btn btn-success btn-xs">Download</a>
-                <a href="/build/delete/{{ build._id }}" class="btn btn-primary btn-xs">Delete</a>
-            </td>
-        </tr>
+            <tr>
+                <td>{{ build._id }}</td>
+                {% for field in structure %}
+                    {% if field == 'build_filename' %}
+                        <td><a href="/builds/{{ build._id }}/{{ build.build_filename }}">{{ build.build_filename }}</a>
+                        </td>
+                        {#<td><a href="/download/{{ build._id }}">{{ build.build_filename }}</a></td>#}
+                    {% else %}
+                        <td>{{ attribute(build, field) }}</td>
+                    {% endif %}
+                {% endfor %}
+                <td>
+                    <a href="/builds/{{ build._id }}/{{ build.build_filename }}"
+                       class="btn btn-success btn-xs">Download</a>
+                    <a href="/build/delete/{{ build._id }}" class="btn btn-primary btn-xs">Delete</a>
+                </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>

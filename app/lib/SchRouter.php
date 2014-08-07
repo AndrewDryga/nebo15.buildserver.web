@@ -10,7 +10,7 @@ class SchRouter extends \Klein\Router
         $send_response = true,
         $capture = self::DISPATCH_NO_CAPTURE
     ) {
-        $request  = $request ? : SchRequest::createFromGlobals();
+        $request = $request ? : SchRequest::createFromGlobals();
         $response = $response ? : new SchResponse();
 
         return parent::dispatch($request, $response, $send_response, $capture);

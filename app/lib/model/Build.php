@@ -14,7 +14,7 @@ class Build
 
     public function __construct($data = null)
     {
-        if($data){
+        if ($data) {
             $this->data = $data;
         }
     }

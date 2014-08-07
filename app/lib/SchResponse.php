@@ -6,7 +6,7 @@ class SchResponse extends \Klein\Response
 {
     public function jsonOk($object, $page_path = null, $page_offset = null, array $meta_data = array(), $options = 0)
     {
-        $meta_data["code"] = 200 ;
+        $meta_data["code"] = 200;
         $data = [
             "meta" => $meta_data,
             "data" => $object,
@@ -53,7 +53,7 @@ class SchResponse extends \Klein\Response
 
     public function json($object, $jsonp_prefix = null, $options = 0)
     {
-        $options = $options ?: JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT;
+        $options = $options ? : JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT;
 
         return parent::json($object, $jsonp_prefix, $options);
     }

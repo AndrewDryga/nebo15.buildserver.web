@@ -36,9 +36,6 @@ class BuildTable
         $this->db = $db;
     }
 
-    /**
-     * @return \MongoCursor
-     */
     public function getList($limit = 30, $offset = 0)
     {
 

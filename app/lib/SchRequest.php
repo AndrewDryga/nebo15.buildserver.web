@@ -22,14 +22,14 @@ class SchRequest extends \Klein\Request
         }
         return new static(
             $_GET,
-            $content_type_json ? ($json_input ?: []) : $_POST,
+            $content_type_json ? ($json_input ? : []) : $_POST,
             $_COOKIE,
             $_SERVER,
             $_FILES,
             null
         );
     }
-    
+
     public function param($key, $default = null)
     {
         if ($value = parent::param($key, $default)) {
