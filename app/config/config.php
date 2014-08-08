@@ -2,7 +2,7 @@
 
 $root = __DIR__ . "/../";
 
-return (object)[
+return [
     'timezone' => 'Europe/Moscow',
     'schema' => 'http',
     'host' => 'builder.nebo15.dev',
