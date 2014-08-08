@@ -16,7 +16,8 @@
         {% macro navbar(section_name) %}
             <ul class="nav navbar-nav navbar">
                 {#<li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.html">Latest</a></li>#}
-                <li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.json">Latest JSON</a></li>
+                <li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.json">Latest JSON</a>
+                </li>
                 <li{% if section_name == 'history' %} class="active"{% endif %}><a href="/history.html">History</a></li>
                 {#<li{% if section_name == 'api' %} class="active"{% endif %}><a href="/api.html">Api</a></li>#}
             </ul>

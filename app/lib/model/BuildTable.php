@@ -129,7 +129,7 @@ class BuildTable
     public function getValidatedFields()
     {
         $fields = $this->getFieldsStructure();
-        unset($fields['build_filename']);
+        unset($fields[array_search('build_filename', $fields)]);
 
         return $fields;
     }

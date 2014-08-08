@@ -94,22 +94,11 @@ $app->router()->respond(
         $build = $app->build_table();
         $request->validateParams($build->getValidatedFields(), $response);
 
-        if (!$request->files() or !$request->files()->exists('file')) {
+        if (!$request->files() or !$request->files()->exists('build_file')) {
             return $response->jsonError(422, "Specify .ipa file with name 'build_file'");
         }
 
-//        $data = [
-//            'name' => 'test Name ' . rand(1, 10),
-//            'build' => 'test build',
-//            'branch' => 'test branch',
-//            'repository' => 'test repository',
-//            'comment' => 'putin huilo',
-//            'bundle' => 'test bundle',
-//            'version' => 'test version',
-//        ];
-//        $result = $build->create($data, $request->files()->file);
-
-        $result = $build->create($request->params(), $request->files()->file);
+        $result = $build->create($request->params(), $request->files()->build_file);
         if ($result['success'] !== true) {
             $response->jsonError($result['code'], $result['error']);
         } else {
@@ -135,17 +124,4 @@ function checkAdminAuth()
     $response->code(401);
     $response->send();
     exit();
-}
-
-function generateBuilds()
-{
-    $data = [
-        'name' => 'test nam ' . rand(1, 10),
-        'build' => 'test build',
-        'branch' => 'test branch',
-        'repository' => 'test repository',
-        'comment' => 'putin huilo',
-        'bundle' => 'test bundle',
-        'version' => 'test version',
-    ];
 }
