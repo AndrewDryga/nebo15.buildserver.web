@@ -24,15 +24,13 @@
                 <td>{{ build._id }}</td>
                 {% for field in structure %}
                     {% if field == 'build_filename' %}
-                        <td><a href="/builds/{{ build._id }}/{{ build.build_filename }}">{{ build.build_filename }}</a>
-                        </td>
-                        {#<td><a href="/download/{{ build._id }}">{{ build.build_filename }}</a></td>#}
+                        <td><a href="{{ build_table.getPlistFileUrl(build) }}">{{ build.build_filename }}</a></td>
                     {% else %}
                         <td>{{ attribute(build, field) }}</td>
                     {% endif %}
                 {% endfor %}
                 <td>
-                    <a href="/builds/{{ build._id }}/{{ build.build_filename }}"
+                    <a href="{{ build_table.getPlistFileUrl(build) }}"
                        class="btn btn-success btn-xs">Download</a>
                     <a href="/build/delete/{{ build._id }}" class="btn btn-primary btn-xs">Delete</a>
                 </td>

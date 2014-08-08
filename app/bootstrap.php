@@ -120,7 +120,7 @@ $app->db(
 
 $app->build_table(
     function () use ($app) {
-        return new \Builder\Model\BuildTable($app->db());
+        return new \Builder\Model\BuildTable($app->db(), $app->config());
     }
 );
 

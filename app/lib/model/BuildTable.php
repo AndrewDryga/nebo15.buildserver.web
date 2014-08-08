@@ -7,9 +7,6 @@
 
 namespace Builder\Model;
 
-
-use Klein\DataCollection\DataCollection;
-
 class BuildTable
 {
     const MONGO_FIELD_NAME_ID = '_id';
@@ -17,6 +14,8 @@ class BuildTable
     const MONGO_FIELD_NAME_UPDATED_TIME = 'updated_at';
 
     private $db;
+
+    private $config;
 
     private $collection_name = 'build';
 
@@ -31,19 +30,25 @@ class BuildTable
         'comment'
     ];
 
-    public function __construct(\MongoDb $db)
+    public function __construct(\MongoDb $db, $config)
     {
         $this->db = $db;
+        $this->config = $config;
     }
 
-    public function getList($limit = 30, $offset = 0)
+    public function getList($limit = 30, $offset = 0, $toJson = false)
     {
-
-        return $this->getCollection()
+        $cursor = $this->getCollection()
             ->find()
             ->skip($offset)
             ->limit($limit)
             ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => 1, self::MONGO_FIELD_NAME_ID => 1]);
+
+        if ($toJson) {
+            $cursor = $this->toJson($cursor);
+        }
+
+        return $cursor;
     }
 
     public function getById($id)
@@ -80,9 +85,9 @@ class BuildTable
         $data[self::MONGO_FIELD_NAME_CREATED_TIME] = new \MongoDate(time());
         $data['build_filename'] = $file['name'];
 
-        $record = $this->getCollection()->insert($data);
-        if (1 != $record['ok']) {
-            $return['error'] = $record['err'];
+        $result = $this->getCollection()->insert($data);
+        if (1 != $result['ok']) {
+            $return['error'] = $result['err'];
 
             return $return;
         }
@@ -104,6 +109,9 @@ class BuildTable
             $this->deleteById($record_id);
             $return['error'] = "Cannot upload file with: '{$e->getMessage()}'";
         }
+
+        $data[self::MONGO_FIELD_NAME_ID] = $record_id;
+        $this->generatePlist($data);
 
         return $return;
     }
@@ -139,4 +147,103 @@ class BuildTable
 
         return $this->getCollection()->remove([self::MONGO_FIELD_NAME_ID => $id]);
     }
-} 
+
+    public function toJson(\MongoCursor $cursor)
+    {
+        $arr = [];
+        foreach ($cursor as $record) {
+
+            $record_id = (string)$record[self::MONGO_FIELD_NAME_ID];
+
+            $arr[$record_id] = [];
+
+            foreach ($this->getFieldsStructure() as $field) {
+                $arr[$record_id][$field] = $record[$field];
+            }
+
+            $arr[$record_id]['build_plist_url'] = $this->getPlistFileUrl($record);
+
+        }
+
+        return $arr;
+    }
+
+    public function getPlistFileUrl($record)
+    {
+        return sprintf(
+            'itms-services://?action=download-manifest&url=itms-services://?action=download-manifest&url=%s://%s/builds/%s/%s',
+            $this->config->schema,
+            $this->config->host,
+            $record[self::MONGO_FIELD_NAME_ID],
+            $this->getPlistName($record)
+        );
+    }
+
+    public function getBuildFileUrl($record)
+    {
+        return sprintf(
+            '%s://%s/builds/%s/%s',
+            $this->config->schema,
+            $this->config->host,
+            $record[self::MONGO_FIELD_NAME_ID],
+            $record['build_filename']
+        );
+    }
+
+    private function getPlistName($record)
+    {
+        return str_replace(' ', '_', $record['name']) . ".plist";
+    }
+
+    private function generatePlist($record)
+    {
+        $xml = str_replace(
+            ["{url}", "{bundle}", "{version}", "{name}",],
+            [$this->getBuildFileUrl($record), $record['bundle'], $record['version'], $record['name'],],
+            $this->getPlistXmlTemplate()
+        );
+
+        file_put_contents(
+            PROJECT_DIR . "public/builds/{$record[self::MONGO_FIELD_NAME_ID]}/{$this->getPlistName($record)}",
+            $xml
+        );
+    }
+
+    private function getPlistXmlTemplate()
+    {
+        return <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>assets</key>
+			<array>
+				<dict>
+					<key>kind</key>
+					<string>software-package</string>
+					<key>url</key>
+					<string>{url}</string>
+				</dict>
+			</array>
+			<key>metadata</key>
+			<dict>
+				<key>bundle-identifier</key>
+				<string>{bundle}</string>
+				<key>bundle-version</key>
+				<string>{version}</string>
+				<key>kind</key>
+				<string>software</string>
+				<key>title</key>
+				<string>{name}</string>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>
+
+XML;
+    }
+}
