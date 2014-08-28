@@ -20,18 +20,6 @@ $app->router()->get(
 );
 
 $app->router()->get(
-    '/latest.json',
-    function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
-
-        $limit = $request->limit ? : 5;
-        $offset = $request->offset ? : 0;
-
-        $response->jsonOk($app->build_table()->getList($limit, $offset, true));
-    }
-);
-
-$app->router()->get(
     '/history.html',
     function (SchRequest $request, SchResponse $response) use ($app) {
         checkAdminAuth();
@@ -54,6 +42,15 @@ $app->router()->get(
                 'structure' => $structure
             ]
         );
+    }
+);
+
+$app->router()->get(
+    '/api.html',
+    function (SchRequest $request, SchResponse $response) use ($app) {
+        checkAdminAuth();
+
+        return $app->view()->render('api.twig', ['api' => \Michelf\MarkdownExtra::defaultTransform(file_get_contents(PROJECT_DIR . '/README.md'))]);
     }
 );
 
@@ -85,12 +82,11 @@ $app->router()->get(
     }
 );
 
-$app->router()->respond(
+$app->router()->post(
     '/upload',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        if (!$request->api_secret or $request->api_secret !== $app->config()->api['secret']) {
-            return $response->jsonError(401, "Unauthorized");
-        }
+        checkApiSecret($request, $response);
+
         $build = $app->build_table();
         $request->validateParams($build->getValidatedFields(), $response);
 
@@ -106,6 +102,39 @@ $app->router()->respond(
         }
     }
 );
+
+$app->router()->get(
+    '/latest.json',
+    function (SchRequest $request, SchResponse $response) use ($app) {
+        checkApiSecret($request, $response);
+
+        $limit = $request->limit ? : 5;
+        $offset = $request->offset ? : 0;
+
+        $response->jsonOk($app->build_table()->getList($limit, $offset, true));
+    }
+);
+
+function checkApiSecret(SchRequest $request, SchResponse $response)
+{
+    $api_id = $request->server()->get('PHP_AUTH_USER');
+    $api_secret = $request->server()->get('PHP_AUTH_PW');
+
+    if (!$api_id and !$api_secret) {
+        return $response->jsonError(401, "Unauthorized");
+    }
+
+    $api_config = \Builder\App::i()->config()->api;
+    if (!isset($api_config[$api_id])) {
+        return $response->jsonError(401, "Unauthorized");
+    }
+
+    if ($api_config[$api_id] != $api_secret) {
+        return $response->jsonError(403, "Unauthorized");
+    }
+
+    return true;
+}
 
 function checkAdminAuth()
 {

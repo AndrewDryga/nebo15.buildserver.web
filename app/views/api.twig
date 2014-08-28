@@ -2,9 +2,11 @@
 
 {% block navbar %}
     {% import "layout.twig" as layout %}
-    {{ layout.navbar('latest') }}
+    {{ layout.navbar('api') }}
 {% endblock %}
 
 {% block content %}
-    <h1>Latest</h1>
+    <div class="row">
+        {{ api|raw }}
+    </div>
 {% endblock %}

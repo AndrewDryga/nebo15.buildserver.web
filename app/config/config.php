@@ -7,7 +7,8 @@ return [
     'schema' => 'http',
     'host' => 'builder.nebo15.dev',
     'api' => [
-        'secret' => 'API_SECRET',
+        // app_id => app_secret
+        'APP_ID' => 'APP_SECRET',
     ],
     'admins' => [
         'builder:iospass',
