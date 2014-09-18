@@ -115,6 +115,18 @@ $app->router()->get(
     }
 );
 
+$app->router()->get(
+    '/build/delete/[h:id]',
+    function (SchRequest $request, SchResponse $response) use ($app) {
+        checkAdminAuth();
+
+        $app->build_table()->deleteById($request->id);
+
+
+        $response->redirect('/history.html');
+    }
+);
+
 function checkApiSecret(SchRequest $request, SchResponse $response)
 {
     $api_id = $request->server()->get('PHP_AUTH_USER');
