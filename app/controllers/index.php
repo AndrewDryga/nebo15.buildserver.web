@@ -121,7 +121,7 @@ $app->router()->get(
         checkAdminAuth();
 
         $app->build_table()->deleteById($request->id);
-
+        /** ToDo: delete file */
 
         $response->redirect('/history.html');
     }
