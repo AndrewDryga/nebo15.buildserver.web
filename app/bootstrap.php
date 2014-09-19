@@ -1,6 +1,4 @@
 <?php
-
-
 use Builder\App;
 use Builder\SchRouter;
 use Monolog\Logger as Logger;
