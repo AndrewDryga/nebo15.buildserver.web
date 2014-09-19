@@ -27,10 +27,10 @@ $app->service('loader', $loader);
 $app->mode(APPLICATION_ENV);
 $app->var_dir(PROJECT_DIR . '/tmp/');
 
-ini_set('error_log', PROJECT_DIR . '/log/main.log');
+ini_set('error_log', PROJECT_DIR . '/var/log/main.log');
 
-$config = require_once(PROJECT_DIR . '/app/config/config.php');
-$config_env = PROJECT_DIR . 'app/config/my.config.php';
+$config = require_once(PROJECT_DIR . '/settings/config.php');
+$config_env = PROJECT_DIR . '/settings/my.config.php';
 if (is_file($config_env)) {
     $config = array_merge($config, require($config_env));
 }
