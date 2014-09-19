@@ -1,6 +1,4 @@
 <?php
-
-
 use Builder\App;
 use Builder\SchRouter;
 use Monolog\Logger as Logger;
@@ -25,12 +23,12 @@ $loader = require_once(PROJECT_DIR . '/vendor/autoload.php');
 $app = App::i();
 $app->service('loader', $loader);
 $app->mode(APPLICATION_ENV);
-$app->var_dir(PROJECT_DIR . '/tmp/');
+$app->var_dir(PROJECT_DIR . '/var/');
 
-ini_set('error_log', PROJECT_DIR . '/log/main.log');
+ini_set('error_log', PROJECT_DIR . '/var/log/main.log');
 
-$config = require_once(PROJECT_DIR . '/app/config/config.php');
-$config_env = PROJECT_DIR . 'app/config/my.config.php';
+$config = require_once(PROJECT_DIR . '/settings/config.php');
+$config_env = PROJECT_DIR . '/settings/my.config.php';
 if (is_file($config_env)) {
     $config = array_merge($config, require($config_env));
 }
@@ -82,7 +80,7 @@ $app->router(
 $app->logger(
     function () {
         $logger = new Logger('main');
-        $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/tmp/log/main.log'));
+        $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/var/log/main.log'));
         return $logger;
     }
 );
@@ -90,7 +88,7 @@ $app->logger(
 $app->requests_logger(
     function () {
         $logger = new Logger('net');
-        $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/tmp/log/requests.log'));
+        $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/var/log/requests.log'));
         return $logger;
     }
 );
@@ -100,7 +98,7 @@ $app->view(
         $view = new Twig_Environment(
             new Twig_Loader_Filesystem(PROJECT_DIR . 'app/views'),
             array(
-                'cache' => PROJECT_DIR . 'tmp/cache/templates',
+                'cache' => PROJECT_DIR . '/var/cache/templates',
                 'debug' => true
             )
         );
