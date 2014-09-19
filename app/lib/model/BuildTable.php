@@ -92,7 +92,7 @@ class BuildTable
             return $return;
         }
 
-        $build_dir = PROJECT_DIR . "public/builds/" . $data[self::MONGO_FIELD_NAME_ID] . DIRECTORY_SEPARATOR;
+        $build_dir = PROJECT_DIR . "www/builds/" . $data[self::MONGO_FIELD_NAME_ID] . DIRECTORY_SEPARATOR;
         mkdir($build_dir);
 
         try {
@@ -204,7 +204,7 @@ class BuildTable
         );
 
         file_put_contents(
-            PROJECT_DIR . "public/builds/{$record[self::MONGO_FIELD_NAME_ID]}/{$this->getPlistName($record)}",
+            PROJECT_DIR . "www/builds/{$record[self::MONGO_FIELD_NAME_ID]}/{$this->getPlistName($record)}",
             $xml
         );
     }
