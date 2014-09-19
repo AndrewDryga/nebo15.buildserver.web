@@ -4,7 +4,7 @@ $root = __DIR__ . "/../";
 
 return [
     'timezone' => 'Europe/Moscow',
-    'schema' => 'http',
+    'schema' => 'https',
     'host' => 'builder.nebo15.dev',
     'api' => [
         // app_id => app_secret
