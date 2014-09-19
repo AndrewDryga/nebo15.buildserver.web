@@ -171,7 +171,7 @@ class BuildTable
     public function getPlistFileUrl($record)
     {
         return sprintf(
-            'itms-services://?action=download-manifest&url=itms-services://?action=download-manifest&url=%s://%s/builds/%s/%s',
+            '://itms-services://?action=download-manifest&url=itms-services://?action=download-manifest&url=%s://%s/builds/%s/%s',
             $this->config->schema,
             $this->config->host,
             $record[self::MONGO_FIELD_NAME_ID],
