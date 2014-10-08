@@ -161,8 +161,9 @@ function checkAdminAuth()
     }
 
     $response = new SchResponse;
-    $response->header('WWW-Authenticate', 'Basic realm="Not so quickly!"');
+    $response->header('WWW-Authenticate', 'Basic realm="Credentials missmatch!"');
     $response->code(401);
+    $response->body("Unauthorized access!");
     $response->send();
     exit();
 }
