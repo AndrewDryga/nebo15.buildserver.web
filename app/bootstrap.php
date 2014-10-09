@@ -28,7 +28,7 @@ $app->var_dir(PROJECT_DIR . '/var/');
 ini_set('error_log', PROJECT_DIR . '/var/log/main.log');
 
 $config = require_once(PROJECT_DIR . '/settings/config.php');
-$config_env = PROJECT_DIR . '/settings/my.config.php';
+$config_env = PROJECT_DIR . '/settings/config.override.php';
 if (is_file($config_env)) {
     $config = array_merge($config, require($config_env));
 }
