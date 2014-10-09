@@ -122,6 +122,40 @@ $app->build_table(
     }
 );
 
+$app->acl(
+    function($args) use ($app) {
+        $request = $args[0];
+        $response = $args[1];
+        $layer = $args[2];
+
+        $auth_id = $request->server()->get('PHP_AUTH_USER');
+        $auth_secret = $request->server()->get('PHP_AUTH_PW');
+
+        if(!$auth_id || !$auth_secret) {
+            return $response->jsonError(401, "Unauthorized");
+        }
+
+        if($layer == "api") {
+            $auhorized_clients = $app->config()->api_keys;
+        } elseif($layer == "web") {
+            $auhorized_clients = $app->config()->users;
+        } else {
+            throw new \Exception("Can't find credentials for '{$layer}' application access layer");
+            return $response->jsonError(401, "Unauthorized");
+        }
+
+        if(array_key_exists($auth_id, $auhorized_clients)) {
+            if($auhorized_clients[$auth_id] == $auth_secret) {
+                return true;
+            } else {
+                return $response->jsonError(403, "Unauthorized");
+            }
+        } else {
+            return $response->jsonError(401, "Unauthorized");
+        }
+    }
+);
+
 /** Controllers */
 
 $controllers = [

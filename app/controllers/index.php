@@ -11,7 +11,9 @@ use Builder\SchResponse;
 $app->router()->get(
     '/latest.html',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
+        if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
+            return $acl_response;
+        }
 
         $view = [
         ];
@@ -22,7 +24,9 @@ $app->router()->get(
 $app->router()->get(
     '/history.html',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
+        if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
+            return $acl_response;
+        }
 
         $limit = 20;
         $offset = 0;
@@ -48,7 +52,9 @@ $app->router()->get(
 $app->router()->get(
     '/api.html',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
+        if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
+            return $acl_response;
+        }
 
         return $app->view()->render('api.twig', ['api' => \Michelf\MarkdownExtra::defaultTransform(file_get_contents(PROJECT_DIR . '/README.md'))]);
     }
@@ -57,7 +63,9 @@ $app->router()->get(
 $app->router()->get(
     '/download/[h:id]',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
+        if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
+            return $acl_response;
+        }
 
         $build = $app->build_table()->getById($request->id);
 
@@ -85,7 +93,9 @@ $app->router()->get(
 $app->router()->post(
     '/upload',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkApiSecret($request, $response);
+        if(($acl_response = $app->acl($request, $response, 'api')) !== true) {
+            return $acl_response;
+        }
 
         $build = $app->build_table();
         $request->validateParams($build->getValidatedFields(), $response);
@@ -106,7 +116,9 @@ $app->router()->post(
 $app->router()->get(
     '/latest.json',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkApiSecret($request, $response);
+        if(($acl_response = $app->acl($request, $response, 'api')) !== true) {
+            return $acl_response;
+        }
 
         $limit = $request->limit ? : 5;
         $offset = $request->offset ? : 0;
@@ -118,7 +130,9 @@ $app->router()->get(
 $app->router()->get(
     '/build/delete/[h:id]',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        checkAdminAuth();
+        if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
+            return $acl_response;
+        }
 
         $app->build_table()->deleteById($request->id);
         /** ToDo: delete file */
@@ -127,43 +141,3 @@ $app->router()->get(
     }
 );
 
-function checkApiSecret(SchRequest $request, SchResponse $response)
-{
-    $api_id = $request->server()->get('PHP_AUTH_USER');
-    $api_secret = $request->server()->get('PHP_AUTH_PW');
-
-    if (!$api_id and !$api_secret) {
-        return $response->jsonError(401, "Unauthorized");
-    }
-
-    $api_config = \Builder\App::i()->config()->api;
-    if (!isset($api_config[$api_id])) {
-        return $response->jsonError(401, "Unauthorized");
-    }
-
-    if ($api_config[$api_id] != $api_secret) {
-        return $response->jsonError(403, "Unauthorized");
-    }
-
-    return true;
-}
-
-function checkAdminAuth()
-{
-    foreach (\Builder\App::i()->config()->admins as $admin) {
-        list($adm_login, $adm_pass) = explode(':', $admin);
-
-        if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
-            if ($adm_login == $_SERVER['PHP_AUTH_USER'] && $adm_pass == $_SERVER['PHP_AUTH_PW']) {
-                return null;
-            }
-        }
-    }
-
-    $response = new SchResponse;
-    $response->header('WWW-Authenticate', 'Basic realm="Credentials missmatch!"');
-    $response->code(401);
-    $response->body("Unauthorized access!");
-    $response->send();
-    exit();
-}
