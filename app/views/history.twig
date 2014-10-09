@@ -56,7 +56,7 @@
                     <small><a href="/history?bundle={{ build.bundle }}">{{ build.bundle }}</a></small>
                 </td>
                 <td>{{ build.created_at.sec | date('m.d.y H:i:s') }}</td>
-                <td><a href="//magnum.travis-ci.com/{{ build.slug }}/history/{{ build.travis_build_id }}">{{ build.build }}</a></td>
+                <td><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">{{ build.build }}</a></td>
                 <td><a href="//github.com/{{ build.slug }}/compare/{{ build.commit_range }}">{{ build.commit_range }}</a></td>
                 <td><a href="/history?server_id={{ build.server_id }}">{{ build.server_id }}</a></td>
                 <td>
@@ -69,7 +69,7 @@
                       <ul class="dropdown-menu" role="menu">
                         <li><a href="{{ build_table.getBuildFileUrl(build) }}">Download .ipa file</a></li>
                         <li><a href="//github.com/{{ build.slug }}/compare/{{ build.commit_range }}">Change view</a></li>
-                        <li><a href="//magnum.travis-ci.com/{{ build.slug }}/history/{{ build.travis_build_id }}">Build history</a></li>
+                        <li><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">Build history</a></li>
                         <li class="divider"></li>
                         <li><a href="/builds/{{ build._id }}/delete">Delete build</a></li>
                       </ul>
