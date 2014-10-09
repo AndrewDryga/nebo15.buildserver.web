@@ -13,10 +13,10 @@
             <tr>
                 <th>
                     #
-                    <a href="/builds?order_by=id&order=desc" class="order-desc">
+                    <a href="/history?order_by=id&order=desc" class="order-desc">
                         <i class="fa fa-caret-down"></i>
                     </a>
-                    <a href="/builds?order_by=id&order=asc" class="order-asc">
+                    <a href="/history?order_by=id&order=asc" class="order-asc">
                         <i class="fa fa-caret-up"></i>
                     </a>
                 </th>
@@ -25,17 +25,21 @@
                 </th>
                 <th>
                     Created at
-                    <a href="/builds?order_by=created_at&order=desc" class="order-desc">
+                    <a href="/history?order_by=created_at&order=desc" class="order-desc">
                         <i class="fa fa-caret-down"></i>
                     </a>
-                    <a href="/builds?order_by=created_at&order=asc" class="order-asc">
+                    <a href="/history?order_by=created_at&order=asc" class="order-asc">
                         <i class="fa fa-caret-up"></i>
                     </a>
                 </th>
                 <th>
                     Build version
-                    <i class="fa fa-caret-down order-desc"></i>
-                    <i class="fa fa-caret-up order-asc"></i>
+                    <a href="/history?order_by=build&order=desc" class="order-desc">
+                        <i class="fa fa-caret-down"></i>
+                    </a>
+                    <a href="/history?order_by=build&order=asc" class="order-asc">
+                        <i class="fa fa-caret-up"></i>
+                    </a>
                 </th>
                 <th>Commits range</th>
                 <th>ServerID</th>
@@ -49,7 +53,7 @@
                 <td>
                     <a href="/builds?name={{ build.name }}">{{ build.name }}</a>
                     <br>
-                    <a href="/builds?bundle={{ build.bundle }}">{{ build.bundle }}</a>
+                    <small><a href="/builds?bundle={{ build.bundle }}">{{ build.bundle }}</a></small>
                 </td>
                 <td>{{ build.created_at.sec | date('m.d.y h:i:s') }}</td>
                 <td><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">{{ build.build }}</a></td>
@@ -67,7 +71,7 @@
                         <li><a href="#">Change view</a></li>
                         <li><a href="#">Build history</a></li>
                         <li class="divider"></li>
-                        <li><a href="/build/delete/{{ build._id }}">Delete build</a></li>
+                        <li><a href="/builds/{{ build._id }}/delete">Delete build</a></li>
                       </ul>
                     </div>
                 </td>
@@ -77,9 +81,16 @@
     </table>
 
     <div class="col-xs-6 col-md-4 col-md-offset-4">
-        <ul class="pager">
-            <li class="previous"><a href="/history.html?page={{ page - 1 }}">← Older</a></li>
-            <li class="next"><a href="/history.html?page={{ page + 1 }}">Newer →</a></li>
+        <ul class="pagination">
+            {% if page - 1 > 0 %}
+                <li><a href="/history?page={{ page - 1 }}">&laquo;</a></li>
+            {% endif %}
+            {% for i in 1..pages_count %}
+                <li class="{% if page == i %}disabled{% endif %}"><a href="/history?page={{ i }}">{{ i }}</a></li>
+            {% endfor %}
+            {% if page + 1 <= pages_count %}
+                <li><a href="/history?page={{ page + 1 }}">&raquo;</a></li>
+            {% endif %}
         </ul>
     </div>
 
