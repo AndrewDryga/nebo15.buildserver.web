@@ -17,17 +17,74 @@ class BuildTable
 
     private $config;
 
-    private $collection_name = 'build';
+    private $collection_name = 'builds';
 
+    /**
+     * Structure of data that this Model can hold and export.
+     *
+     * ID and date are always shown by default. Its hardcoded.
+     */
     private $fields_structure = [
-        'build',
-        'build_filename',
-        'branch',
-        'repository',
-        'name',
-        'bundle',
-        'version',
-        'comment'
+        'name' => [
+            'required' => true,
+            'export' => true
+        ],
+        'version' => [
+            'required' => true,
+            'export' => true
+        ],
+        'build' => [
+            'required' => true,
+            'export' => true
+        ],
+        'build_filename' => [
+            'required' => false,
+            'export' => false
+        ],
+        'slug' => [
+            'required' => true,
+            'export' => true
+        ],
+        'travis_build_id' => [
+            'required' => false,
+            'export' => true
+        ],
+        'travis_build_number' => [
+            'required' => false,
+            'export' => true
+        ],
+        'travis_job_id' => [
+            'required' => false,
+            'export' => true
+        ],
+        'travis_job_number' => [
+            'required' => false,
+            'export' => true
+        ],
+        'branch' => [
+            'required' => true,
+            'export' => true
+        ],
+        'commit' => [
+            'required' => true,
+            'export' => true
+        ],
+        'commit_range' => [
+            'required' => false,
+            'export' => true
+        ],
+        'bundle' => [
+            'required' => false,
+            'export' => true
+        ],
+        'server_id' => [
+            'required' => false,
+            'export' => true
+        ],
+        'comment' => [
+            'required' => false,
+            'export' => true
+        ],
     ];
 
     public function __construct(\MongoDb $db, $config)
@@ -36,13 +93,27 @@ class BuildTable
         $this->config = $config;
     }
 
+    public function search($search, $limit = 30, $offset = 0) {
+        $cursor = $this->getCollection()
+            ->find()
+            ->skip($offset)
+            ->limit($limit)
+            ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1]);
+
+        if ($toJson) {
+            $cursor = $this->toJson($cursor);
+        }
+
+        return $cursor;
+    }
+
     public function getList($limit = 30, $offset = 0, $toJson = false)
     {
         $cursor = $this->getCollection()
             ->find()
             ->skip($offset)
             ->limit($limit)
-            ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => 1, self::MONGO_FIELD_NAME_ID => 1]);
+            ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1]);
 
         if ($toJson) {
             $cursor = $this->toJson($cursor);
@@ -62,58 +133,72 @@ class BuildTable
 
     public function create($data, array $file)
     {
-        $return = [
-            'success' => false,
-            'code' => 500
+        $response = [
+            'code' => 500,
+            'error' => 'Internal error',
+            'data' => null,
         ];
 
         $allowed_fields = $this->getFieldsStructure();
 
         foreach ($data as $field => $value) {
-            if (!in_array($field, $allowed_fields)) {
+            if (!array_key_exists($field, $allowed_fields)) {
                 unset($data[$field]);
             }
         }
 
-        if (!$data) {
-            $return['error'] = 'Nothing to save';
+        if(count($data) < 1) {
+            $response['code'] = 400;
+            $response['error'] = 'No data found';
 
-            return $return;
+            return $response;
         }
 
         $record_id = $data[self::MONGO_FIELD_NAME_ID] = new \MongoId;
         $data[self::MONGO_FIELD_NAME_CREATED_TIME] = new \MongoDate(time());
         $data['build_filename'] = $file['name'];
 
-        $result = $this->getCollection()->insert($data);
-        if (1 != $result['ok']) {
-            $return['error'] = $result['err'];
+        $insert_result = $this->getCollection()->insert($data);
+        if (1 != $insert_result['ok']) {
+            $response['error'] = $result['err'];
 
-            return $return;
+            return $response;
         }
 
-        $build_dir = PROJECT_DIR . "www/builds/" . $data[self::MONGO_FIELD_NAME_ID] . DIRECTORY_SEPARATOR;
-        mkdir($build_dir);
+        $build_dir = $this->getBuildDirById($data[self::MONGO_FIELD_NAME_ID]);
+        if(!mkdir($build_dir)) {
+            $response['error'] = 'Failed create builds folder';
+
+            return $response;
+        }
 
         try {
-            if (!(move_uploaded_file($file['tmp_name'], $build_dir . $file['name']))) {
+            if (!move_uploaded_file($file['tmp_name'], $build_dir . $file['name'])) {
                 rmdir($build_dir);
                 $this->deleteById($record_id);
-                $return['error'] = 'Failed upload file';
-            } else {
-                unset($return['code']);
-                $return['success'] = true;
+                $response['error'] = 'Failed to move uploaded file';
+
+                return $response;
             }
         } catch (\Exception $e) {
-            rmdir($build_dir);
             $this->deleteById($record_id);
-            $return['error'] = "Cannot upload file with: '{$e->getMessage()}'";
+            $response['error'] = "Cannot upload file with: '{$e->getMessage()}'";
         }
 
-        $data[self::MONGO_FIELD_NAME_ID] = $record_id;
-        $this->generatePlist($data);
+        try {
+            if(!$this->generatePlist($data)) {
+                $response['error'] = 'Failed to generate plist file';
+            } else {
+                $response['code'] = 200;
+                unset($response['error']);
+                $response['data'] = $this->toJson_Item($data);
+            }
+        } catch (\Exception $e) {
+            $this->deleteById($record_id);
+            $response['error'] = "Cannot generate plist file with: '{$e->getMessage()}'";
+        }
 
-        return $return;
+        return $response;
     }
 
     public function getCollection()
@@ -128,15 +213,18 @@ class BuildTable
 
     public function getValidatedFields()
     {
-        $fields = $this->getFieldsStructure();
-        unset($fields[array_search('build_filename', $fields)]);
-
-        return $fields;
+        return array_keys(array_filter($this->getFieldsStructure(), function($item) {
+            return $item['required'];
+        }));
     }
 
     public function getCollectionName()
     {
         return $this->collection_name;
+    }
+
+    public function getBuildDirById($id) {
+        return PROJECT_DIR . "www/builds/" . $id . DIRECTORY_SEPARATOR;
     }
 
     public function deleteById($id)
@@ -145,27 +233,59 @@ class BuildTable
             $id = new \MongoId($id);
         }
 
+        $record = $this->getById($id);
+        $build_dir = $this->getBuildDirById($record[self::MONGO_FIELD_NAME_ID]);
+
+        $build_ipa_file = $build_dir . $record['build_filename'];
+        if(is_file($build_ipa_file)) {
+            unlink($build_ipa_file);
+        }
+
+        $build_plist_file = $build_dir . $this->getPlistName($record);
+        if(is_file($build_plist_file)) {
+            unlink($build_plist_file);
+        }
+
+        if(is_dir($build_dir)) {
+            rmdir($build_dir);
+        }
+
         return $this->getCollection()->remove([self::MONGO_FIELD_NAME_ID => $id]);
+    }
+
+    public function toJson_Item($record, $available_fields = null) {
+        if($available_fields == null) {
+            $available_fields = $this->getFieldsStructure();
+        }
+
+        $exported_record = [];
+        $exported_record['id'] = (string) $record[self::MONGO_FIELD_NAME_ID];
+        $exported_record['date'] = date('Y-m-d h:i:s', $record[self::MONGO_FIELD_NAME_CREATED_TIME]->sec);
+
+        foreach ($available_fields as $field_name => $field_params) {
+            if(!array_key_exists($field_name, $record) && !array_key_exists($field_name, $exported_record)) {
+                $exported_record[$field_name] = null;
+            }
+            elseif($field_params['export'] === true) {
+                $exported_record[$field_name] = $record[$field_name];
+            }
+        }
+
+        $exported_record['build_plist_url'] = $this->getPlistFileUrl($record);
+
+        return $exported_record;
     }
 
     public function toJson(\MongoCursor $cursor)
     {
-        $arr = [];
+        $available_fields = $this->getFieldsStructure();
+
+        $result = [];
         foreach ($cursor as $record) {
-
-            $record_id = (string)$record[self::MONGO_FIELD_NAME_ID];
-
-            $arr[$record_id] = [];
-
-            foreach ($this->getFieldsStructure() as $field) {
-                $arr[$record_id][$field] = $record[$field];
-            }
-
-            $arr[$record_id]['build_plist_url'] = $this->getPlistFileUrl($record);
-
+            $result[] = $this->toJson_Item($record, $available_fields);
         }
 
-        return $arr;
+        return $result;
     }
 
     public function getPlistFileUrl($record)
@@ -203,10 +323,10 @@ class BuildTable
             $this->getPlistXmlTemplate()
         );
 
-        file_put_contents(
+        return (false !== file_put_contents(
             PROJECT_DIR . "www/builds/{$record[self::MONGO_FIELD_NAME_ID]}/{$this->getPlistName($record)}",
             $xml
-        );
+        ));
     }
 
     private function getPlistXmlTemplate()

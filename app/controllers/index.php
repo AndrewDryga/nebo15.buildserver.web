@@ -42,8 +42,7 @@ $app->router()->get(
             $offset = $limit * $request->page - $limit;
         }
 
-        $structure = $app->build_table()->getFieldsStructure();
-        unset($structure[array_search('comment', $structure)]);
+        $structure = array_keys($app->build_table()->getFieldsStructure());
 
         return $app->view()->render(
             'history.twig',
@@ -113,10 +112,10 @@ $app->router()->post(
         }
 
         $result = $build->create($request->params(), $request->files()->build_file);
-        if ($result['success'] !== true) {
+        if ($result['code'] !== 200 || is_null($result['data'])) {
             $response->jsonError($result['code'], $result['error']);
         } else {
-            $response->jsonOk($result);
+            $response->jsonOk($result['data']);
         }
     }
 );
@@ -143,7 +142,6 @@ $app->router()->get(
         }
 
         $app->build_table()->deleteById($request->id);
-        /** ToDo: delete file */
 
         $response->redirect('/history');
     }
