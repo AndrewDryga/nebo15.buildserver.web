@@ -134,6 +134,7 @@ $app->acl(
         $auth_secret = $request->server()->get('PHP_AUTH_PW');
 
         if (!$auth_id || !$auth_secret) {
+            $response->header('WWW-Authenticate', 'Basic realm="Not so quickly!"');
             return $response->jsonError(401, "Unauthorized");
         }
 
@@ -144,6 +145,7 @@ $app->acl(
         } else {
             throw new \Exception("Can't find credentials for '{$layer}' application access layer");
 
+            $response->header('WWW-Authenticate', 'Basic realm="Not so quickly!"');
             return $response->jsonError(401, "Unauthorized");
         }
 
@@ -151,9 +153,11 @@ $app->acl(
             if ($auhorized_clients[$auth_id] == $auth_secret) {
                 return true;
             } else {
+                $response->header('WWW-Authenticate', 'Basic realm="Not so quickly!"');
                 return $response->jsonError(403, "Unauthorized");
             }
         } else {
+            $response->header('WWW-Authenticate', 'Basic realm="Not so quickly!"');
             return $response->jsonError(401, "Unauthorized");
         }
     }
