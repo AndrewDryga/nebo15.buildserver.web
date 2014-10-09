@@ -50,20 +50,56 @@ $app->router()->get(
             return $acl_response;
         }
 
+        // Getting data collection
+        $build_table = $app->build_table();
+
+        $available_fields = $build_table->getFieldsStructure();
+        $available_fields['created_at'] = [];
+        $available_fields['id'] = [];
+        // Filtering
+        $filters = $request->paramsGet()->all();
+        foreach ($filters as $field_key => $field_value) {
+            if(!array_key_exists($field_key, $available_fields)) {
+                if($field_key == 'id') {
+                    $field_key = '_id';
+                }
+                unset($filters[$field_key]);
+            }
+        }
+
+        // Ordering
+        $sort = [];
+        $sort_key = $request->paramsGet()->order_by ?: 'created_at';
+        $sort_order = $request->paramsGet()->order ?: 'desc';
+        if($sort_key) {
+            if(array_key_exists($sort_key, $available_fields)) {
+                if($sort_key == 'id') {
+                    $sort_key = '_id';
+                }
+                $sort[$sort_key] = ($sort_order == 'desc' ? -1 : 1);
+            }
+        }
+
+        // Pagination
         $limit = 20;
         $offset = 0;
+        $page = $request->page ?: 1;
         if ($request->page && $request->page > 1) {
             $offset = $limit * $request->page - $limit;
         }
 
-        $structure = array_keys($app->build_table()->getFieldsStructure());
+        // Getting data
+        $builds = $build_table->getList($limit, $offset, false, $filters, $sort, $group);
 
+        $pages_count = ceil($builds->count() / $limit);
+
+
+        // Data export
         return $app->view()->render('history.twig', [
-                'page' => $request->page,
-                'pages_count' => ceil($app->build_table()->getCollectionCount() / $limit),
-                'build_table' => $app->build_table()->getCollectionCount(),
-                'builds' => $app->build_table()->getList($limit, $offset),
-                'structure' => $structure
+                'page' => $page,
+                'pages_count' => $pages_count,
+                'build_table' => $build_table,
+                'builds' => $builds,
             ]
         );
     }

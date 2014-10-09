@@ -93,28 +93,20 @@ class BuildTable
         $this->config = $config;
     }
 
-    public function search($search, $limit = 30, $offset = 0)
+    public function getList($limit = 30, $offset = 0, $toJson = false, $find = [], $sort = [], $group = [])
     {
-        $cursor = $this->getCollection()
-            ->find()
+        $sort = array_merge([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1], $sort);
+
+        $collection = $this->getCollection();
+        // if(count($group)) {
+        //     $collection->group($group, ["count" => 0], "function (obj, prev) { prev.count++; }");
+        // }
+
+        $cursor = $collection
+            ->find($find)
             ->skip($offset)
             ->limit($limit)
-            ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1]);
-
-        if ($toJson) {
-            $cursor = $this->toJson($cursor);
-        }
-
-        return $cursor;
-    }
-
-    public function getList($limit = 30, $offset = 0, $toJson = false)
-    {
-        $cursor = $this->getCollection()
-            ->find()
-            ->skip($offset)
-            ->limit($limit)
-            ->sort([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1]);
+            ->sort($sort);
 
         if ($toJson) {
             $cursor = $this->toJson($cursor);
@@ -207,9 +199,12 @@ class BuildTable
         return $this->db->selectCollection($this->getCollectionName());
     }
 
-    public function getCollectionCount()
+    public function getCollectionCount($collection = null)
     {
-        return $this->getCollection()->count();
+        if(is_null($collection)) {
+            $collection = $this->getCollection();
+        }
+        return $collection->count();
     }
 
     public function getFieldsStructure()
