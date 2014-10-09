@@ -93,7 +93,7 @@ class BuildTable
         $this->config = $config;
     }
 
-    public function getList($limit = 30, $offset = 0, $toJson = false, $find = [], $sort = [], $group = [])
+    public function getList($limit = 30, $offset = 0, $toJson = false, $find = [], $sort = [])
     {
         $sort = array_merge([self::MONGO_FIELD_NAME_CREATED_TIME => -1, self::MONGO_FIELD_NAME_ID => 1], $sort);
 

@@ -89,7 +89,7 @@ $app->router()->get(
         }
 
         // Getting data
-        $builds = $build_table->getList($limit, $offset, false, $filters, $sort, $group);
+        $builds = $build_table->getList($limit, $offset, false, $filters, $sort);
 
         $pages_count = ceil($builds->count() / $limit);
 
