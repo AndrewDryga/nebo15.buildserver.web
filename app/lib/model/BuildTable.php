@@ -158,7 +158,7 @@ class BuildTable
             return $response;
         }
 
-        $build_dir = $this->getBuildDirById($data[self::MONGO_FIELD_NAME_ID]);
+        $build_dir = $this->getBuildFileDir($data);
         if (!mkdir($build_dir, 0777)) {
             $response['error'] = 'Failed create builds folder';
 
@@ -224,11 +224,6 @@ class BuildTable
         return $this->collection_name;
     }
 
-    public function getBuildDirById($id)
-    {
-        return PROJECT_DIR . "www/builds/" . $id . DIRECTORY_SEPARATOR;
-    }
-
     public function deleteById($id)
     {
         if (!is_object($id)) {
@@ -240,7 +235,7 @@ class BuildTable
             return true;
         }
 
-        $build_dir = $this->getBuildDirById($record[self::MONGO_FIELD_NAME_ID]);
+        $build_dir = $this->getBuildFileDir($record);
 
         $build_ipa_file = $build_dir . $record['build_filename'];
         if (is_file($build_ipa_file)) {
@@ -303,6 +298,16 @@ class BuildTable
             $record[self::MONGO_FIELD_NAME_ID],
             $this->getPlistName($record)
         );
+    }
+
+    public function getBuildFileDir($record)
+    {
+        return PROJECT_DIR . "www/builds/" . $record[self::MONGO_FIELD_NAME_ID] . DIRECTORY_SEPARATOR;
+    }
+
+    public function getBuildFilePath($record)
+    {
+        return $this->getBuildFileDir($record) . $record['build_filename'];
     }
 
     public function getBuildFileUrl($record)
