@@ -9,7 +9,7 @@ use Builder\SchRequest;
 use Builder\SchResponse;
 
 $app->router()->get(
-    '/latest.html',
+    '/latest',
     function (SchRequest $request, SchResponse $response) use ($app) {
         if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
             return $acl_response;
@@ -22,7 +22,7 @@ $app->router()->get(
 );
 
 $app->router()->get(
-    '/history.html',
+    '/history',
     function (SchRequest $request, SchResponse $response) use ($app) {
         if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
             return $acl_response;
@@ -50,7 +50,7 @@ $app->router()->get(
 );
 
 $app->router()->get(
-    '/api.html',
+    '/api',
     function (SchRequest $request, SchResponse $response) use ($app) {
         if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
             return $acl_response;
@@ -137,7 +137,7 @@ $app->router()->get(
         $app->build_table()->deleteById($request->id);
         /** ToDo: delete file */
 
-        $response->redirect('/history.html');
+        $response->redirect('/history');
     }
 );
 
