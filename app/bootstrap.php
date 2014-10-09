@@ -34,7 +34,7 @@ if (is_file($config_env)) {
 }
 $app->config(
     function () use ($config) {
-        return (object)$config;
+        return (object) $config;
     }
 );
 
@@ -81,6 +81,7 @@ $app->logger(
     function () {
         $logger = new Logger('main');
         $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/var/log/main.log'));
+
         return $logger;
     }
 );
@@ -89,6 +90,7 @@ $app->requests_logger(
     function () {
         $logger = new Logger('net');
         $logger->pushHandler(new StreamHandler(PROJECT_DIR . '/var/log/requests.log'));
+
         return $logger;
     }
 );
@@ -123,7 +125,7 @@ $app->build_table(
 );
 
 $app->acl(
-    function($args) use ($app) {
+    function ($args) use ($app) {
         $request = $args[0];
         $response = $args[1];
         $layer = $args[2];
@@ -131,21 +133,22 @@ $app->acl(
         $auth_id = $request->server()->get('PHP_AUTH_USER');
         $auth_secret = $request->server()->get('PHP_AUTH_PW');
 
-        if(!$auth_id || !$auth_secret) {
+        if (!$auth_id || !$auth_secret) {
             return $response->jsonError(401, "Unauthorized");
         }
 
-        if($layer == "api") {
+        if ($layer == "api") {
             $auhorized_clients = $app->config()->api_keys;
-        } elseif($layer == "web") {
+        } elseif ($layer == "web") {
             $auhorized_clients = $app->config()->users;
         } else {
             throw new \Exception("Can't find credentials for '{$layer}' application access layer");
+
             return $response->jsonError(401, "Unauthorized");
         }
 
-        if(array_key_exists($auth_id, $auhorized_clients)) {
-            if($auhorized_clients[$auth_id] == $auth_secret) {
+        if (array_key_exists($auth_id, $auhorized_clients)) {
+            if ($auhorized_clients[$auth_id] == $auth_secret) {
                 return true;
             } else {
                 return $response->jsonError(403, "Unauthorized");
@@ -157,9 +160,9 @@ $app->acl(
 );
 
 /** Controllers */
-
 $controllers = [
-    'index',
+    'history',
+    'upload',
 ];
 
 foreach ($controllers as $controller) {
@@ -167,7 +170,6 @@ foreach ($controllers as $controller) {
 }
 
 /** Errors */
-
 $app->router()->respond(
     '404',
     function ($request, \Builder\SchResponse $response) {

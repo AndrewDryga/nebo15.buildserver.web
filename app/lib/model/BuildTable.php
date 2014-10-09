@@ -93,7 +93,8 @@ class BuildTable
         $this->config = $config;
     }
 
-    public function search($search, $limit = 30, $offset = 0) {
+    public function search($search, $limit = 30, $offset = 0)
+    {
         $cursor = $this->getCollection()
             ->find()
             ->skip($offset)
@@ -147,7 +148,7 @@ class BuildTable
             }
         }
 
-        if(count($data) < 1) {
+        if (count($data) < 1) {
             $response['code'] = 400;
             $response['error'] = 'No data found';
 
@@ -166,7 +167,7 @@ class BuildTable
         }
 
         $build_dir = $this->getBuildDirById($data[self::MONGO_FIELD_NAME_ID]);
-        if(!mkdir($build_dir)) {
+        if (!mkdir($build_dir, 0777)) {
             $response['error'] = 'Failed create builds folder';
 
             return $response;
@@ -186,7 +187,7 @@ class BuildTable
         }
 
         try {
-            if(!$this->generatePlist($data)) {
+            if (!$this->generatePlist($data)) {
                 $response['error'] = 'Failed to generate plist file';
             } else {
                 $response['code'] = 200;
@@ -206,6 +207,11 @@ class BuildTable
         return $this->db->selectCollection($this->getCollectionName());
     }
 
+    public function getCollectionCount()
+    {
+        return $this->getCollection()->count();
+    }
+
     public function getFieldsStructure()
     {
         return $this->fields_structure;
@@ -213,7 +219,7 @@ class BuildTable
 
     public function getValidatedFields()
     {
-        return array_keys(array_filter($this->getFieldsStructure(), function($item) {
+        return array_keys(array_filter($this->getFieldsStructure(), function ($item) {
             return $item['required'];
         }));
     }
@@ -223,7 +229,8 @@ class BuildTable
         return $this->collection_name;
     }
 
-    public function getBuildDirById($id) {
+    public function getBuildDirById($id)
+    {
         return PROJECT_DIR . "www/builds/" . $id . DIRECTORY_SEPARATOR;
     }
 
@@ -234,27 +241,32 @@ class BuildTable
         }
 
         $record = $this->getById($id);
+        if (is_null($record)) {
+            return true;
+        }
+
         $build_dir = $this->getBuildDirById($record[self::MONGO_FIELD_NAME_ID]);
 
         $build_ipa_file = $build_dir . $record['build_filename'];
-        if(is_file($build_ipa_file)) {
+        if (is_file($build_ipa_file)) {
             unlink($build_ipa_file);
         }
 
         $build_plist_file = $build_dir . $this->getPlistName($record);
-        if(is_file($build_plist_file)) {
+        if (is_file($build_plist_file)) {
             unlink($build_plist_file);
         }
 
-        if(is_dir($build_dir)) {
+        if (is_dir($build_dir)) {
             rmdir($build_dir);
         }
 
         return $this->getCollection()->remove([self::MONGO_FIELD_NAME_ID => $id]);
     }
 
-    public function toJson_Item($record, $available_fields = null) {
-        if($available_fields == null) {
+    public function toJson_Item($record, $available_fields = null)
+    {
+        if ($available_fields == null) {
             $available_fields = $this->getFieldsStructure();
         }
 
@@ -263,10 +275,9 @@ class BuildTable
         $exported_record['date'] = date('Y-m-d h:i:s', $record[self::MONGO_FIELD_NAME_CREATED_TIME]->sec);
 
         foreach ($available_fields as $field_name => $field_params) {
-            if(!array_key_exists($field_name, $record) && !array_key_exists($field_name, $exported_record)) {
+            if (!array_key_exists($field_name, $record) && !array_key_exists($field_name, $exported_record)) {
                 $exported_record[$field_name] = null;
-            }
-            elseif($field_params['export'] === true) {
+            } elseif ($field_params['export'] === true) {
                 $exported_record[$field_name] = $record[$field_name];
             }
         }
@@ -336,31 +347,31 @@ class BuildTable
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>items</key>
-	<array>
-		<dict>
-			<key>assets</key>
-			<array>
-				<dict>
-					<key>kind</key>
-					<string>software-package</string>
-					<key>url</key>
-					<string>{url}</string>
-				</dict>
-			</array>
-			<key>metadata</key>
-			<dict>
-				<key>bundle-identifier</key>
-				<string>{bundle}</string>
-				<key>bundle-version</key>
-				<string>{version}</string>
-				<key>kind</key>
-				<string>software</string>
-				<key>title</key>
-				<string>{name}</string>
-			</dict>
-		</dict>
-	</array>
+    <key>items</key>
+    <array>
+        <dict>
+            <key>assets</key>
+            <array>
+                <dict>
+                    <key>kind</key>
+                    <string>software-package</string>
+                    <key>url</key>
+                    <string>{url}</string>
+                </dict>
+            </array>
+            <key>metadata</key>
+            <dict>
+                <key>bundle-identifier</key>
+                <string>{bundle}</string>
+                <key>bundle-version</key>
+                <string>{version}</string>
+                <key>kind</key>
+                <string>software</string>
+                <key>title</key>
+                <string>{name}</string>
+            </dict>
+        </dict>
+    </array>
 </dict>
 </plist>
 
