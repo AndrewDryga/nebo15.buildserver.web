@@ -149,7 +149,7 @@ $app->router()->get(
 $app->router()->get(
     '/builds/[h:id]',
     function (SchRequest $request, SchResponse $response) use ($app) {
-        var_dump($request->id);
+        // TODO cyclic redirection
         $response->redirect('/history?id=' + $request->id);
     }
 );
