@@ -81,8 +81,8 @@ $app->router()->get(
         }
 
         // Pagination
-        $limit = 20;
-        $offset = 0;
+        $limit = $request->limit ?: 20;
+        $offset = $request->offset ?: 0;
         $page = $request->page ?: 1;
         if ($request->page && $request->page > 1) {
             $offset = $limit * $request->page - $limit;
