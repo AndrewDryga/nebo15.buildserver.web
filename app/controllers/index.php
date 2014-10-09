@@ -9,6 +9,14 @@ use Builder\SchRequest;
 use Builder\SchResponse;
 
 $app->router()->get(
+    '/',
+    function (SchRequest $request, SchResponse $response) use ($app) {
+        $response->redirect('/history');
+    }
+);
+
+
+$app->router()->get(
     '/latest',
     function (SchRequest $request, SchResponse $response) use ($app) {
         if(($acl_response = $app->acl($request, $response, 'web')) !== true) {
