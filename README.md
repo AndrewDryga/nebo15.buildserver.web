@@ -20,10 +20,21 @@
 * `build_file` - файл сборки
 
 ```shell
-$ curl  -F build_file=@/build/file/path -uAPP_ID:APP_SECRET
- -d '{"name": "My build", "build": "111", "branch": "dev", "repository": "github.com/my-repo",
- "bundle": "iOS", "version": "1.1", "comment": "1.1" }'
- http://builds.nebo15.me/upload
+$ curl -uAPP_ID:APP_SECRET \
+     -F "name=Walletz" \
+     -F "version=2.2" \
+     -F "build=2.1.$BNO" \
+     -F "slug=Nebo15/mbank.ios" \
+     -F "travis_build_id=$BID" \
+     -F "travis_job_id=$BID" \
+     -F "travis_job_number=1" \
+     -F "branch=master" \
+     -F "commit=d112fdd" \
+     -F "commit_range=d112fdd..d112fdd" \
+     -F "bundle=com.nebo15.mbank.develop" \
+     -F "server_id=SERVER_DEV" \
+     -F "build_file=@./var/test.ipa" \
+     http://builds.nebo15.dev/upload.json
 ```
 
 
@@ -33,8 +44,24 @@ $ curl  -F build_file=@/build/file/path -uAPP_ID:APP_SECRET
         "code": 200
     },
     "data": {
-        "success": true,
-        "code": 200
+        "id": "543676aca58ecfa2610041d7",
+        "date": "2014-10-09 03:51:08",
+        "plist_path": "2014-10-09 03:51:08",
+        "name": "Walletz",
+        "version": "2.2",
+        "build": "2.1.102",
+        "slug": "Nebo15\/mbank.ios",
+        "travis_build_id": "12412401",
+        "travis_build_number": null,
+        "travis_job_id": "12412401",
+        "travis_job_number": "1",
+        "branch": "master",
+        "commit": "d112fdd",
+        "commit_range": "d112fdd..d112fdd",
+        "bundle": "com.nebo15.mbank.develop",
+        "server_id": "SERVER_DEV",
+        "comment": null,
+        "build_plist_url": "itms-services:\/\/?action=download-manifest&url=itms-services:\/\/?action=download-manifest&url=http:\/\/builder.nebo15.dev\/builds\/543676aca58ecfa2610041d7\/Walletz.plist"
     }
 }
 ```

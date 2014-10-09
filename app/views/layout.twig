@@ -16,7 +16,7 @@
             {% macro navbar(section_name) %}
                 <ul class="nav navbar-nav navbar">
                     <li{% if section_name == 'history' %} class="active"{% endif %}><a href="/history">History</a></li>
-                    <li{% if section_name == 'api' %} class="active"{% endif %}><a href="/api">Api</a></li>
+                    <li{% if section_name == 'docs' %} class="active"{% endif %}><a href="/docs">Api</a></li>
                 </ul>
             {% endmacro %}
             {% block navbar %}{% endblock %}

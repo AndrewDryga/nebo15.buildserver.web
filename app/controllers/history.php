@@ -106,7 +106,7 @@ $app->router()->get(
 );
 
 $app->router()->get(
-    '/api',
+    '/docs',
     function (SchRequest $request, SchResponse $response) use ($app) {
         if (($acl_response = $app->acl($request, $response, 'web')) !== true) {
             return $acl_response;
