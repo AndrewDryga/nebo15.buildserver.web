@@ -6,12 +6,11 @@ return [
     'timezone' => 'Europe/Moscow',
     'schema' => 'https',
     'host' => 'builder.nebo15.dev',
-    'api' => [
-        // app_id => app_secret
-        'APP_ID' => 'APP_SECRET',
+    'users' => [
+        'john' => 'smith',
     ],
-    'admins' => [
-        'builder:iospass',
+    'api_keys' => [
+        'randomapp' => 'ThisIsSecretKey',
     ],
     'db' => [
         'database' => 'build_server',
