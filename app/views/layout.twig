@@ -5,30 +5,30 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body>
+    <div class="navbar navbar-default">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/history">Builder</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-responsive-collapse">
+            {% macro navbar(section_name) %}
+                <ul class="nav navbar-nav navbar">
+                    <li{% if section_name == 'history' %} class="active"{% endif %}><a href="/history">History</a></li>
+                    <li{% if section_name == 'api' %} class="active"{% endif %}><a href="/api">Api</a></li>
+                </ul>
+            {% endmacro %}
+            {% block navbar %}{% endblock %}
+        </div>
+    </div>
 
-<div class="navbar navbar-default">
-    <div class="navbar-header">
-        <a class="navbar-brand" href="/history.html">Builder</a>
+    <div class="container">
+        <div class="row">
+            {% block content %}{% endblock %}
+        </div>
     </div>
-    <div class="navbar-collapse collapse navbar-responsive-collapse">
-        {% macro navbar(section_name) %}
-            <ul class="nav navbar-nav navbar">
-                {#<li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.html">Latest</a></li>#}
-                {#<li{% if section_name == 'latest' %} class="active"{% endif %}><a href="/latest.json">Latest JSON</a></li>#}
-                <li{% if section_name == 'history' %} class="active"{% endif %}><a href="/history.html">History</a></li>
-                <li{% if section_name == 'api' %} class="active"{% endif %}><a href="/api.html">Api</a></li>
-            </ul>
-        {% endmacro %}
-        {% block navbar %}{% endblock %}
-    </div>
-</div>
-
-<div class="container">
-    <div class="row">
-        {% block content %}{% endblock %}
-    </div>
-</div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 </body>
 </html>
