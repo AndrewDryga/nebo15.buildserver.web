@@ -153,7 +153,7 @@ class BuildTable
 
         $insert_result = $this->getCollection()->insert($data);
         if (1 != $insert_result['ok']) {
-            $response['error'] = $result['err'];
+            $response['error'] = $insert_result['err'];
 
             return $response;
         }
@@ -201,7 +201,7 @@ class BuildTable
 
     public function getCollectionCount($collection = null)
     {
-        if(is_null($collection)) {
+        if (is_null($collection)) {
             $collection = $this->getCollection();
         }
         return $collection->count();
@@ -214,9 +214,14 @@ class BuildTable
 
     public function getValidatedFields()
     {
-        return array_keys(array_filter($this->getFieldsStructure(), function ($item) {
-            return $item['required'];
-        }));
+        return array_keys(
+            array_filter(
+                $this->getFieldsStructure(),
+                function ($item) {
+                    return $item['required'];
+                }
+            )
+        );
     }
 
     public function getCollectionName()
@@ -261,7 +266,7 @@ class BuildTable
         }
 
         $exported_record = [];
-        $exported_record['id'] = (string) $record[self::MONGO_FIELD_NAME_ID];
+        $exported_record['id'] = (string)$record[self::MONGO_FIELD_NAME_ID];
         $exported_record['date'] = date('Y-m-d h:i:s', $record[self::MONGO_FIELD_NAME_CREATED_TIME]->sec);
 
         foreach ($available_fields as $field_name => $field_params) {

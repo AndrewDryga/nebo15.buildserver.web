@@ -21,11 +21,20 @@ $app->router()->get(
         if (($acl_response = $app->acl($request, $response, 'web')) !== true) {
             return $acl_response;
         }
+        $build_table = $app->build_table();
 
-        $view = [
-        ];
+        // Pagination
+        list($limit, $offset, $page) = paginate($request);
 
-        return $app->view()->render('latest.twig', $view);
+        // Getting data
+        $builds = $build_table->getList($limit, $offset, false, [], ['created_at' => -1]);
+
+        return $app->view()->render('latest.twig',[
+            'page' => $page,
+            'pages_count' => ceil($builds->count() / $limit),
+            'build_table' => $build_table,
+            'builds' => $builds,
+        ]);
     }
 );
 
@@ -35,11 +44,11 @@ $app->router()->get(
         if (($acl_response = $app->acl($request, $response, 'api')) !== true) {
             return $acl_response;
         }
+        $build_table = $app->build_table();
+        // Pagination
+        list($limit, $offset, $page) = paginate($request);
 
-        $limit = $request->limit ? : 5;
-        $offset = $request->offset ? : 0;
-
-        $response->jsonOk($app->build_table()->getList($limit, $offset, true));
+        $response->jsonOk($build_table->getList($limit, $offset, false, [], ['created_at' => -1]));
     }
 );
 
@@ -59,8 +68,8 @@ $app->router()->get(
         // Filtering
         $filters = $request->paramsGet()->all();
         foreach ($filters as $field_key => $field_value) {
-            if(!array_key_exists($field_key, $available_fields)) {
-                if($field_key == 'id') {
+            if (!array_key_exists($field_key, $available_fields)) {
+                if ($field_key == 'id') {
                     $field_key = '_id';
                 }
                 unset($filters[$field_key]);
@@ -71,9 +80,9 @@ $app->router()->get(
         $sort = [];
         $sort_key = $request->paramsGet()->order_by ?: 'created_at';
         $sort_order = $request->paramsGet()->order ?: 'desc';
-        if($sort_key) {
-            if(array_key_exists($sort_key, $available_fields)) {
-                if($sort_key == 'id') {
+        if ($sort_key) {
+            if (array_key_exists($sort_key, $available_fields)) {
+                if ($sort_key == 'id') {
                     $sort_key = '_id';
                 }
                 $sort[$sort_key] = ($sort_order == 'desc' ? -1 : 1);
@@ -81,12 +90,7 @@ $app->router()->get(
         }
 
         // Pagination
-        $limit = $request->limit ?: 20;
-        $offset = $request->offset ?: 0;
-        $page = $request->page ?: 1;
-        if ($request->page && $request->page > 1) {
-            $offset = $limit * $request->page - $limit;
-        }
+        list($limit, $offset, $page) = paginate($request);
 
         // Getting data
         $builds = $build_table->getList($limit, $offset, false, $filters, $sort);
@@ -96,12 +100,11 @@ $app->router()->get(
 
         // Data export
         return $app->view()->render('history.twig', [
-                'page' => $page,
-                'pages_count' => $pages_count,
-                'build_table' => $build_table,
-                'builds' => $builds,
-            ]
-        );
+            'page' => $page,
+            'pages_count' => $pages_count,
+            'build_table' => $build_table,
+            'builds' => $builds,
+        ]);
     }
 );
 
@@ -150,7 +153,7 @@ $app->router()->get(
     '/builds/[h:id]',
     function (SchRequest $request, SchResponse $response) use ($app) {
         // TODO cyclic redirection
-        $response->redirect('/history?id=' + $request->id);
+        $response->redirect('/history?id=' . $request->id);
     }
 );
 
@@ -170,3 +173,14 @@ $app->router()->get(
         $response->redirect($back_url);
     }
 );
+
+function paginate(SchRequest $request)
+{
+    $limit = $request->limit ?: 20;
+    $offset = $request->offset ?: 0;
+    $page = $request->page ?: 1;
+    if ($request->page && $request->page > 1) {
+        $offset = $limit * $request->page - $limit;
+    }
+    return [$limit, $offset, $page];
+}

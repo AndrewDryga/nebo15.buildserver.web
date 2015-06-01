@@ -1,0 +1,72 @@
+{% extends 'layout.twig' %}
+
+{% block navbar %}
+    {% import "layout.twig" as layout %}
+    {{ layout.navbar('latest') }}
+{% endblock %}
+
+{% block content %}
+    <h1>latest</h1>
+
+    <table class="table table-striped table-hover table-responsive">
+        <thead class="table-ordered">
+        <tr>
+            <th>#</th>
+            <th>App Name / BundleID</th>
+            <th>Created at</th>
+            <th>Build version</th>
+            <th>Commits range</th>
+            <th>ServerID</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for build in builds %}
+            <tr>
+                <td><a href="/builds/{{ build._id }}">{{ build._id | slice(-5) }}</a></td>
+                <td>
+                    <a href="/latest?name={{ build.name }}">{{ build.name }}</a>
+                    <br>
+                    <small><a href="/latest?bundle={{ build.bundle }}">{{ build.bundle }}</a></small>
+                </td>
+                <td>{{ build.created_at.sec | date('m.d.y H:i:s') }}</td>
+                <td><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">{{ build.build }}</a></td>
+                <td><a href="//github.com/{{ build.slug }}/compare/{{ build.commit_range }}">{{ build.commit_range }}</a></td>
+                <td><a href="/latest?server_id={{ build.server_id }}">{{ build.server_id }}</a></td>
+                <td>
+                    <a href="{{ build_table.getPlistFileUrl(build) }}" class="btn btn-success btn-xs">Install</a>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown">
+                            Action <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="{{ build_table.getBuildFileUrl(build) }}">Download .ipa file</a></li>
+                            <li><a href="//github.com/{{ build.slug }}/compare/{{ build.commit_range }}">Change view</a></li>
+                            <li><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">Build latest</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/builds/{{ build._id }}/delete">Delete build</a></li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pages_count > 1 %}
+        <div class="col-xs-6 col-md-4 col-md-offset-4">
+            <ul class="pagination">
+                {% if page - 1 > 0 %}
+                    <li><a href="/latest?page={{ page - 1 }}">&laquo;</a></li>
+                {% endif %}
+                {% for i in 1..pages_count %}
+                    <li class="{% if page == i %}disabled{% endif %}"><a href="/latest?page={{ i }}">{{ i }}</a></li>
+                {% endfor %}
+                {% if page + 1 <= pages_count %}
+                    <li><a href="/latest?page={{ page + 1 }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}

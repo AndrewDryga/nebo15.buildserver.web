@@ -14,11 +14,6 @@ class App extends \Klein\App
 {
     private $factories = [];
 
-    public function isGuest()
-    {
-        return is_null($this->mserver()->getHTTPClient()->getLogin());
-    }
-
     public function __call($key, $args)
     {
         if (isset($this->factories[$key])) {
