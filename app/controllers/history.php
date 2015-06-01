@@ -48,7 +48,7 @@ $app->router()->get(
         // Pagination
         list($limit, $offset, $page) = paginate($request);
 
-        $response->jsonOk($build_table->getList($limit, $offset, false, [], ['created_at' => -1]));
+        $response->jsonOk($build_table->getList($limit, $offset, true, [], ['created_at' => -1]));
     }
 );
 
