@@ -41,6 +41,10 @@ class BuildTable
             'required' => false,
             'export' => false
         ],
+        'build_filename_app' => [
+            'required' => false,
+            'export' => false
+        ],
         'slug' => [
             'required' => true,
             'export' => true
@@ -124,7 +128,7 @@ class BuildTable
         return $this->getCollection()->findOne([self::MONGO_FIELD_NAME_ID => $id]);
     }
 
-    public function create($data, array $file)
+    public function create($data, array $file, array $app_file)
     {
         $response = [
             'code' => 500,
@@ -150,6 +154,7 @@ class BuildTable
         $record_id = $data[self::MONGO_FIELD_NAME_ID] = new \MongoId;
         $data[self::MONGO_FIELD_NAME_CREATED_TIME] = new \MongoDate(time());
         $data['build_filename'] = $file['name'];
+        $data['build_filename_app'] = (array_key_exists('name', $app_file)) ? $app_file['name'] : '';
 
         $insert_result = $this->getCollection()->insert($data);
         if (1 != $insert_result['ok']) {
@@ -158,24 +163,9 @@ class BuildTable
             return $response;
         }
 
-        $build_dir = $this->getBuildFileDir($data);
-        if (!mkdir($build_dir, 0777)) {
-            $response['error'] = 'Failed create builds folder';
-
-            return $response;
-        }
-
-        try {
-            if (!move_uploaded_file($file['tmp_name'], $build_dir . $file['name'])) {
-                rmdir($build_dir);
-                $this->deleteById($record_id);
-                $response['error'] = 'Failed to move uploaded file';
-
-                return $response;
-            }
-        } catch (\Exception $e) {
-            $this->deleteById($record_id);
-            $response['error'] = "Cannot upload file with: '{$e->getMessage()}'";
+        $this->saveFile($file, $data);
+        if ($app_file) {
+            $this->saveFile($app_file, $data);
         }
 
         try {
@@ -192,6 +182,31 @@ class BuildTable
         }
 
         return $response;
+    }
+
+    private function saveFile($file, $record)
+    {
+        $build_dir = $this->getBuildFileDir($record);
+        $record_id = $record[self::MONGO_FIELD_NAME_ID];
+        if (!file_exists($build_dir)) {
+            if (!mkdir($build_dir, 0777)) {
+                $response['error'] = 'Failed create builds folder';
+
+                return $response;
+            }
+        }
+        try {
+            if (!move_uploaded_file($file['tmp_name'], $build_dir . $file['name'])) {
+                rmdir($build_dir);
+                $this->deleteById($record_id);
+                $response['error'] = 'Failed to move uploaded file';
+
+                return $response;
+            }
+        } catch (\Exception $e) {
+            $this->deleteById($record_id);
+            $response['error'] = "Cannot upload file with: '{$e->getMessage()}'";
+        }
     }
 
     public function getCollection()
@@ -245,6 +260,12 @@ class BuildTable
         $build_ipa_file = $build_dir . $record['build_filename'];
         if (is_file($build_ipa_file)) {
             unlink($build_ipa_file);
+        }
+        if (array_key_exists('build_filename_app', $record)) {
+            $build_app_file = $build_dir . $record['build_filename_app'];
+            if (is_file($build_app_file)) {
+                unlink($build_app_file);
+            }
         }
 
         $build_plist_file = $build_dir . $this->getPlistName($record);
@@ -315,14 +336,14 @@ class BuildTable
         return $this->getBuildFileDir($record) . $record['build_filename'];
     }
 
-    public function getBuildFileUrl($record)
+    public function getBuildFileUrl($record, $type)
     {
         return sprintf(
             '%s://%s/builds/%s/%s',
             $this->config->schema,
             $this->config->host,
             $record[self::MONGO_FIELD_NAME_ID],
-            $record['build_filename']
+            ($type == 'ipa') ? $record['build_filename'] : ( (array_key_exists('build_filename_app', $record)) ? $record['build_filename_app'] : '')
         );
     }
 
@@ -335,7 +356,7 @@ class BuildTable
     {
         $xml = str_replace(
             ["{url}", "{bundle}", "{version}", "{name}",],
-            [$this->getBuildFileUrl($record), $record['bundle'], $record['version'], $record['name'],],
+            [$this->getBuildFileUrl($record, 'ipa'), $record['bundle'], $record['version'], $record['name'],],
             $this->getPlistXmlTemplate()
         );
 

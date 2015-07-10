@@ -21,8 +21,8 @@ $app->router()->post(
         if (!$request->files() or !$request->files()->exists('build_file')) {
             return $response->jsonError(422, "Specify .ipa file with name 'build_file'");
         }
-
-        $result = $build->create($request->params(), $request->files()->build_file);
+        $app_file = ($request->files()->build_app_file) ? $request->files()->build_app_file : [];
+        $result = $build->create($request->params(), $request->files()->build_file, $app_file);
         if ($result['code'] !== 200 || is_null($result['data'])) {
             $response->jsonError($result['code'], $result['error']);
         } else {

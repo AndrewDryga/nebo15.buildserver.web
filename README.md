@@ -34,6 +34,7 @@ $ curl -uAPP_ID:APP_SECRET \
      -F "bundle=com.nebo15.mbank.develop" \
      -F "server_id=SERVER_DEV" \
      -F "build_file=@./var/test.ipa" \
+     -F "build_app_file=@./var/test.app" \
      http://builds.nebo15.dev/upload.json
 ```
 
