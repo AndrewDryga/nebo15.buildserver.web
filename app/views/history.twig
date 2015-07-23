@@ -67,7 +67,8 @@
                         Action <span class="caret"></span>
                       </button>
                       <ul class="dropdown-menu" role="menu">
-                        <li><a href="{{ build_table.getBuildFileUrl(build) }}">Download .ipa file</a></li>
+                        <li><a href="{{ build_table.getBuildFileUrl(build, 'ipa') }}">Download .ipa file</a></li>
+                          {% if build.build_filename_app %}<li><a href="{{ build_table.getBuildFileUrl(build, 'app') }}">Download .app file</a></li>{% endif %}
                         <li><a href="//github.com/{{ build.slug }}/compare/{{ build.commit_range }}">Change view</a></li>
                         <li><a href="//magnum.travis-ci.com/{{ build.slug }}/builds/{{ build.travis_build_id }}">Build history</a></li>
                         <li class="divider"></li>
